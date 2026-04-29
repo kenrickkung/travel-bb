@@ -52,7 +52,7 @@ const s = {
     color: '#f3ead8',
     borderColor: '#2a2520',
   },
-  tabName: { fontSize: 15, fontWeight: 600 },
-  tabEn: { fontSize: 9, fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.15em', marginTop: 2, opacity: 0.5 },
-  tabEnActive: { opacity: 0.6 },
+  tabName: { fontSize: 16, fontWeight: 600 },
+  tabEn: { fontSize: 9, fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.15em', marginTop: 2, opacity: 0.7 },
+  tabEnActive: { opacity: 0.8 },
 }

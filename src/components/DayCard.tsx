@@ -92,10 +92,10 @@ const s = {
   dayDate: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 4 },
   dayDateNum: { fontFamily: "'JetBrains Mono', monospace", fontSize: 22, fontWeight: 600, letterSpacing: '0.05em' },
   dayWeekday: { fontSize: 12, color: '#8a7558' },
-  dayLabel: { fontSize: 15, fontWeight: 600 },
+  dayLabel: { fontSize: 16, fontWeight: 600 },
   stamp: {
-    width: 88,
-    height: 100,
+    width: 96,
+    height: 110,
     background: '#fffdf7',
     border: '1px dashed rgba(42,37,32,0.4)',
     padding: 5,

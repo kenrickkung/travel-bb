@@ -259,7 +259,7 @@ const s = {
   },
   stopBody: { flex: 1, minWidth: 0 },
   stopTitle: { display: 'flex', alignItems: 'center', gap: 6 },
-  stopText: { fontSize: 14, fontWeight: 500, lineHeight: 1.4, cursor: 'pointer', flex: 1 },
+  stopText: { fontSize: 15, fontWeight: 500, lineHeight: 1.4, cursor: 'pointer', flex: 1 },
   placeholder: { color: '#a89880', fontStyle: 'italic' as const },
   mapPin: {
     fontSize: 11,

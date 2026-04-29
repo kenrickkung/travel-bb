@@ -10,11 +10,23 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  box-sizing: border-box;
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
 }
 
 body {
-  background: #f3ead8;
-  margin: 0;
+  background: #f5efe4;
+  font-family: 'Noto Sans TC', sans-serif;
+  color: #2a241d;
 }
+
+* { box-sizing: border-box; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: rgba(42,36,29,0.2); border-radius: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+button:hover { opacity: 0.85; }
+a:hover { opacity: 0.7; }
