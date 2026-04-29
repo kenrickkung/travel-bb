@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head><script type='text/javascript' nonce='VUt7IaCkQw5bfNCT8SNKDA==' src='https://claude.ai/DGUPhDvHyQ1r-3yk4jDedpRcBQZIPmYAqt86-TtdHGuL8GKN8mlQXVp18uR7pd2hiqQVTMx-T_nUMB3JxFbiLA=='></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>旅 · TABI — Travel Guide (by bb!)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body { background: #f5efe4; font-family: 'Noto Sans TC', sans-serif; color: #2a241d; }
+  * { box-sizing: border-box; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: rgba(42,36,29,0.2); border-radius: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  button:hover { opacity: 0.85; }
+  a:hover { opacity: 0.7; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="data/itinerary.js"></script>
+<script type="text/babel" src="views/tabi-view.jsx"></script>
+
+<script type="text/babel">
+  const App = () => <window.TabiApp trip={window.TRIP} />;
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

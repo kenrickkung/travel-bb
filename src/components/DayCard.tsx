@@ -1,6 +1,19 @@
 import { useState } from 'react'
-import { type TripDay, type Activity } from '../data/tripData'
+import { type TripDay, type Activity, type City } from '../data/tripData'
 import { ActivityItem } from './ActivityItem'
+import { type DayWeather, wmoEmoji } from '../hooks/useWeather'
+
+const CITY_COLOR: Record<City, string> = {
+  London: '#4a7c9e',
+  Paris: '#9e4a4a',
+  Amsterdam: '#4a9e6a',
+}
+
+const CITY_LABEL: Record<City, string> = {
+  London: '倫敦',
+  Paris: '巴黎',
+  Amsterdam: '阿姆斯特丹',
+}
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 
@@ -16,6 +29,7 @@ function formatDate(dayId: string): string {
 interface Props {
   day: TripDay
   note: string
+  weather?: DayWeather | null
   onNoteChange: (text: string) => void
   onUpdate: (actId: string, fields: Partial<Activity>) => void
   onDelete: (actId: string) => void
@@ -23,7 +37,7 @@ interface Props {
   onMove: (fromIdx: number, toIdx: number) => void
 }
 
-export function DayCard({ day, note, onNoteChange, onUpdate, onDelete, onAdd, onMove }: Props) {
+export function DayCard({ day, note, weather, onNoteChange, onUpdate, onDelete, onAdd, onMove }: Props) {
   const [newActId, setNewActId] = useState<string | null>(null)
 
   const cleanLabel = day.dayLabel.replace(/（星期.）/, '').trim()
@@ -41,6 +55,25 @@ export function DayCard({ day, note, onNoteChange, onUpdate, onDelete, onAdd, on
           <span style={s.dayWeekday}>{getWeekday(day.id)}</span>
         </div>
         <div style={s.dayLabel}>{cleanLabel}</div>
+        <div style={s.dayMeta}>
+          <div style={s.cityBadges}>
+            {day.cities.map(c => (
+              <span key={c} style={{ ...s.cityBadge, background: CITY_COLOR[c] }}>
+                {CITY_LABEL[c]}
+              </span>
+            ))}
+          </div>
+          {weather && (
+            <div style={s.weatherRow}>
+              <span style={s.weatherEmoji}>{wmoEmoji(weather.wmoCode)}</span>
+              <span style={s.weatherHi}>↑{weather.tempMax}°</span>
+              <span style={s.weatherLo}> ↓{weather.tempMin}°</span>
+              {weather.precip > 0 && (
+                <span style={s.weatherPrecip}> · 💧{weather.precip}mm</span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div style={s.stamp}>
@@ -93,6 +126,21 @@ const s = {
   dayDateNum: { fontFamily: "'JetBrains Mono', monospace", fontSize: 22, fontWeight: 600, letterSpacing: '0.05em' },
   dayWeekday: { fontSize: 12, color: '#8a7558' },
   dayLabel: { fontSize: 16, fontWeight: 600 },
+  dayMeta: { display: 'flex', alignItems: 'center', gap: 12, marginTop: 6, flexWrap: 'wrap' as const },
+  cityBadges: { display: 'flex', gap: 5, flexWrap: 'wrap' as const },
+  cityBadge: {
+    display: 'inline-block',
+    fontSize: 10,
+    padding: '2px 8px',
+    color: '#f3ead8',
+    fontFamily: "'JetBrains Mono', monospace",
+    letterSpacing: '0.08em',
+  },
+  weatherRow: { display: 'flex', alignItems: 'center', fontSize: 12 },
+  weatherEmoji: { fontSize: 14, marginRight: 4 },
+  weatherHi: { fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: '#bf6a3d', fontWeight: 600 },
+  weatherLo: { fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: '#4a7c9e' },
+  weatherPrecip: { fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: '#8a7558' },
   stamp: {
     width: 96,
     height: 110,

@@ -6,7 +6,7 @@ export async function fetchDays(): Promise<TripDay[]> {
     .from('trip_days')
     .select(`
       id, date, day_label, cities, sort_order,
-      activities ( id, day_id, time, text, sort_order,
+      activities ( id, day_id, time, text, emoji, category, sort_order,
         subitems ( id, activity_id, text, sort_order )
       )
     `)
@@ -26,6 +26,8 @@ export async function fetchDays(): Promise<TripDay[]> {
         id: act.id,
         time: act.time ?? undefined,
         text: act.text,
+        emoji: act.emoji ?? undefined,
+        category: act.category ?? undefined,
         subitems: ((act.subitems || []) as any[])
           .sort((a: any, b: any) => a.sort_order - b.sort_order)
           .map((sub: any) => ({ id: sub.id, text: sub.text })),
@@ -47,12 +49,13 @@ export async function upsertActivity(dayId: string, act: Activity, sortOrder: nu
     day_id: dayId,
     time: act.time ?? null,
     text: act.text,
+    emoji: act.emoji ?? null,
+    category: act.category ?? null,
     sort_order: sortOrder,
     updated_at: new Date().toISOString(),
   })
   if (error) throw error
 
-  // Replace subitems: delete all, re-insert
   await supabase.from('subitems').delete().eq('activity_id', act.id)
   if (act.subitems && act.subitems.length > 0) {
     const { error: subErr } = await supabase.from('subitems').insert(
@@ -80,6 +83,8 @@ export async function reorderActivities(dayId: string, activities: Activity[]): 
       day_id: dayId,
       time: act.time ?? null,
       text: act.text,
+      emoji: act.emoji ?? null,
+      category: act.category ?? null,
       sort_order: i,
       updated_at: new Date().toISOString(),
     }))
@@ -117,6 +122,8 @@ export async function seedDays(days: TripDay[]): Promise<void> {
         day_id: day.id,
         time: act.time ?? null,
         text: act.text,
+        emoji: act.emoji ?? null,
+        category: act.category ?? null,
         sort_order: i,
         updated_at: new Date().toISOString(),
       }))

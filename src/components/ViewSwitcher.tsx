@@ -1,10 +1,8 @@
-export type ViewMode = 'list' | 'timeline' | 'map' | 'weather'
+export type ViewMode = 'list' | 'timeline'
 
 const VIEWS: { id: ViewMode; name: string; en: string }[] = [
-  { id: 'list',     name: '手帳',  en: 'LIST' },
+  { id: 'list',     name: '手帳',  en: 'NOTEBOOK' },
   { id: 'timeline', name: '行程表', en: 'TIMELINE' },
-  { id: 'map',      name: '地圖',  en: 'MAP' },
-  { id: 'weather',  name: '天氣',  en: 'WEATHER' },
 ]
 
 interface Props {
@@ -33,8 +31,8 @@ const s = {
   tabs: {
     position: 'relative' as const,
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr 1fr',
-    gap: 5,
+    gridTemplateColumns: '1fr 1fr',
+    gap: 6,
     marginBottom: 22,
     zIndex: 1,
   },
@@ -42,28 +40,25 @@ const s = {
     background: 'transparent',
     border: '1px solid rgba(42,37,32,0.25)',
     borderRadius: 0,
-    padding: '9px 4px',
+    padding: '10px 6px',
     cursor: 'pointer',
     fontFamily: "'Noto Serif TC', serif",
     color: '#6b5d4f',
     transition: 'all 0.2s',
-    minHeight: 48,
+    minHeight: 52,
   },
   tabActive: {
     background: '#2a2520',
     color: '#f3ead8',
     borderColor: '#2a2520',
   },
-  tabName: { fontSize: 15, fontWeight: 600 },
+  tabName: { fontSize: 16, fontWeight: 600 },
   tabEn: {
-    fontSize: 7,
+    fontSize: 8,
     fontFamily: "'JetBrains Mono', monospace",
-    letterSpacing: '0.1em',
-    marginTop: 2,
+    letterSpacing: '0.15em',
+    marginTop: 3,
     opacity: 0.7,
-    overflow: 'hidden' as const,
-    textOverflow: 'ellipsis' as const,
-    whiteSpace: 'nowrap' as const,
   },
   tabEnActive: { opacity: 0.8 },
 }
