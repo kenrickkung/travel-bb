@@ -1,7 +1,11 @@
 import { useRef, useState } from 'react'
 import { CityTabs } from './components/CityTabs'
 import { DayCard } from './components/DayCard'
-import { useTrip } from './hooks/useTrip'
+import { ViewSwitcher, type ViewMode } from './components/ViewSwitcher'
+import { TimelineView } from './components/TimelineView'
+import { MapView } from './components/MapView'
+import { WeatherView } from './components/WeatherView'
+import { useTrip, type SyncStatus } from './hooks/useTrip'
 import { type City } from './data/tripData'
 
 const CITY_META: Record<City, {
@@ -26,17 +30,20 @@ const CITY_META: Record<City, {
   },
 }
 
+function syncDotColor(status: SyncStatus): string {
+  if (status === 'idle') return '#4a9e6a'
+  if (status === 'syncing') return '#bf6a3d'
+  return '#9e4a4a'
+}
+
 export default function App() {
   const [city, setCity] = useState<City>('London')
-  const { days, updateActivity, deleteActivity, addActivity, moveActivity, reset, replaceAll } = useTrip()
+  const [view, setView] = useState<ViewMode>('list')
+  const { days, notes, syncStatus, updateActivity, deleteActivity, addActivity, moveActivity, updateNote, reset, replaceAll } = useTrip()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleExport() {
-    const data = {
-      version: 1,
-      days,
-      notes: JSON.parse(localStorage.getItem('travel-bb-notes') || '{}'),
-    }
+    const data = { version: 1, days, notes }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -54,7 +61,6 @@ export default function App() {
       try {
         const data = JSON.parse(ev.target?.result as string)
         if (Array.isArray(data.days)) replaceAll(data.days)
-        if (data.notes) localStorage.setItem('travel-bb-notes', JSON.stringify(data.notes))
       } catch {
         alert('Could not read backup file — make sure it was exported from this app.')
       }
@@ -62,6 +68,7 @@ export default function App() {
     reader.readAsText(file)
     e.target.value = ''
   }
+
   const meta = CITY_META[city]
   const visibleDays = days.filter(d => (d.cities ?? []).includes(city))
 
@@ -81,46 +88,66 @@ export default function App() {
         </div>
       </header>
 
-      <CityTabs active={city} onChange={setCity} />
+      <ViewSwitcher active={view} onChange={setView} />
 
-      <section style={s.cityMeta}>
-        <div style={s.cityDates}>{meta.dates}</div>
-        <div style={s.metaRow}>
-          <span style={s.metaLabel}>住宿</span>
-          <span style={s.metaVal}>
-            <a href={meta.hotel.url} target="_blank" rel="noopener noreferrer" style={s.hotelLink}>
-              {meta.hotel.name}
-            </a>
-            {' · '}{meta.hotel.area}
-          </span>
-        </div>
-        <div style={s.metaRow}>
-          <span style={s.metaLabel}>進</span>
-          <span style={s.metaVal}>{meta.transit.in}</span>
-        </div>
-        <div style={s.metaRow}>
-          <span style={s.metaLabel}>出</span>
-          <span style={s.metaVal}>{meta.transit.out}</span>
-        </div>
-      </section>
+      {view === 'list' && (
+        <>
+          <CityTabs active={city} onChange={setCity} />
 
-      <main style={s.days}>
-        {visibleDays.map(day => (
-          <DayCard
-            key={day.id}
-            day={day}
-            onUpdate={(actId, fields) => updateActivity(day.id, actId, fields)}
-            onDelete={actId => deleteActivity(day.id, actId)}
-            onAdd={() => addActivity(day.id)}
-            onMove={(from, to) => moveActivity(day.id, from, to)}
-          />
-        ))}
-      </main>
+          <section style={s.cityMeta}>
+            <div style={s.cityDates}>{meta.dates}</div>
+            <div style={s.metaRow}>
+              <span style={s.metaLabel}>住宿</span>
+              <span style={s.metaVal}>
+                <a href={meta.hotel.url} target="_blank" rel="noopener noreferrer" style={s.hotelLink}>
+                  {meta.hotel.name}
+                </a>
+                {' · '}{meta.hotel.area}
+              </span>
+            </div>
+            <div style={s.metaRow}>
+              <span style={s.metaLabel}>進</span>
+              <span style={s.metaVal}>{meta.transit.in}</span>
+            </div>
+            <div style={s.metaRow}>
+              <span style={s.metaLabel}>出</span>
+              <span style={s.metaVal}>{meta.transit.out}</span>
+            </div>
+          </section>
+
+          <main style={s.days}>
+            {visibleDays.map(day => (
+              <DayCard
+                key={day.id}
+                day={day}
+                note={notes[day.id] ?? ''}
+                onNoteChange={text => updateNote(day.id, text)}
+                onUpdate={(actId, fields) => updateActivity(day.id, actId, fields)}
+                onDelete={actId => deleteActivity(day.id, actId)}
+                onAdd={() => addActivity(day.id)}
+                onMove={(from, to) => moveActivity(day.id, from, to)}
+              />
+            ))}
+          </main>
+        </>
+      )}
+
+      {view === 'timeline' && <TimelineView days={days} />}
+      {view === 'map'      && <MapView />}
+      {view === 'weather'  && <WeatherView />}
 
       <footer style={s.footer}>
         <div style={s.footerLine}>—— 旅途愉快 ——</div>
         <div style={s.footerSub}>made with ♡ by bb</div>
         <div style={s.footerActions}>
+          <span
+            className={syncStatus === 'syncing' ? 'sync-syncing' : undefined}
+            style={{ ...s.syncDot, color: syncDotColor(syncStatus) }}
+            title={`sync: ${syncStatus}`}
+          >
+            ●
+          </span>
+          <span style={s.footerDot}>·</span>
           <button onClick={handleExport} style={s.footerBtn}>↓ export</button>
           <span style={s.footerDot}>·</span>
           <button onClick={() => fileInputRef.current?.click()} style={s.footerBtn}>↑ import</button>
@@ -168,7 +195,7 @@ const s = {
   },
   header: { position: 'relative' as const, textAlign: 'center' as const, marginBottom: 18, zIndex: 1 },
   kicker: { fontSize: 11, letterSpacing: '0.4em', color: '#8a7558', marginBottom: 14, fontFamily: "'JetBrains Mono', monospace" },
-  title: { fontSize: 32, lineHeight: 1.1, margin: 0, fontWeight: 600, letterSpacing: '0.01em' },
+  title: { fontSize: 28, lineHeight: 1.1, margin: 0, fontWeight: 600, letterSpacing: '0.01em' },
   subtitle: { fontSize: 13, marginTop: 10, color: '#6b5d4f', letterSpacing: '0.05em' },
   dates: { fontSize: 11, marginTop: 8, color: '#8a7558', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.1em' },
   divider: { marginTop: 18, opacity: 0.7 },
@@ -189,7 +216,8 @@ const s = {
   footer: { position: 'relative' as const, textAlign: 'center' as const, marginTop: 50, zIndex: 1 },
   footerLine: { fontSize: 12, color: '#8a7558', letterSpacing: '0.4em' },
   footerSub: { fontSize: 10, color: '#a89880', marginTop: 6, fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.1em' },
-  footerActions: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 14 },
+  footerActions: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 14, flexWrap: 'wrap' as const },
+  syncDot: { fontSize: 10, cursor: 'default' },
   footerBtn: {
     background: 'transparent',
     border: 'none',
@@ -200,6 +228,7 @@ const s = {
     cursor: 'pointer',
     textDecoration: 'underline',
     padding: 0,
+    minHeight: 28,
   },
   footerDot: { fontSize: 10, color: '#c8b89a' },
 }

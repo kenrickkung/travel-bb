@@ -2,19 +2,7 @@ import { useState } from 'react'
 import { type TripDay, type Activity } from '../data/tripData'
 import { ActivityItem } from './ActivityItem'
 
-const NOTES_KEY = 'travel-bb-notes'
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
-
-function loadNotes(): Record<string, string> {
-  try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '{}') }
-  catch { return {} }
-}
-
-function saveNote(dayId: string, value: string) {
-  const notes = loadNotes()
-  notes[dayId] = value
-  localStorage.setItem(NOTES_KEY, JSON.stringify(notes))
-}
 
 function getWeekday(dayId: string): string {
   const [y, m, d] = dayId.split('-').map(Number)
@@ -27,26 +15,22 @@ function formatDate(dayId: string): string {
 
 interface Props {
   day: TripDay
+  note: string
+  onNoteChange: (text: string) => void
   onUpdate: (actId: string, fields: Partial<Activity>) => void
   onDelete: (actId: string) => void
   onAdd: () => string
   onMove: (fromIdx: number, toIdx: number) => void
 }
 
-export function DayCard({ day, onUpdate, onDelete, onAdd, onMove }: Props) {
+export function DayCard({ day, note, onNoteChange, onUpdate, onDelete, onAdd, onMove }: Props) {
   const [newActId, setNewActId] = useState<string | null>(null)
-  const [note, setNote] = useState(() => loadNotes()[day.id] || '')
 
   const cleanLabel = day.dayLabel.replace(/（星期.）/, '').trim()
 
   function handleAdd() {
     const id = onAdd()
     setNewActId(id)
-  }
-
-  function handleNoteChange(v: string) {
-    setNote(v)
-    saveNote(day.id, v)
   }
 
   return (
@@ -93,7 +77,7 @@ export function DayCard({ day, onUpdate, onDelete, onAdd, onMove }: Props) {
         <div style={s.notesLabel}>筆記</div>
         <textarea
           value={note}
-          onChange={e => handleNoteChange(e.target.value)}
+          onChange={e => onNoteChange(e.target.value)}
           placeholder="今日心得、好吃的、照片打卡..."
           style={s.notesInput}
         />
@@ -148,6 +132,7 @@ const s = {
     fontFamily: "'JetBrains Mono', monospace",
     letterSpacing: '0.15em',
     cursor: 'pointer',
+    minHeight: 36,
   },
   notesBlock: { marginTop: 16, clear: 'both' as const },
   notesLabel: { fontSize: 10, color: '#8a7558', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.2em', marginBottom: 6 },
