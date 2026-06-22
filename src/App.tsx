@@ -38,7 +38,7 @@ const CITY_CONFIG: Record<CityId, {
   },
 }
 
-const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
+const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日']
 function getWeekday(dayId: string): string {
   const [y, m, d] = dayId.split('-').map(Number)
   return `週${WEEKDAYS[new Date(y, m - 1, d).getDay()]}`
@@ -62,9 +62,10 @@ export default function App() {
   const [view, setView] = useState<ViewMode>('list')
   const [newActId, setNewActId] = useState<string | null>(null)
 
-  const { days, notes, syncStatus, updateActivity, deleteActivity, addActivity, moveActivity, updateNote, reset } = useTrip()
+  const { days, notes, syncStatus, updateActivity, deleteActivity, addActivity, moveActivity, updateNote, reset, swapDays } = useTrip()
   const { getForDay } = useWeather()
   const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+  const [swapSourceId, setSwapSourceId] = useState<string | null>(null)
 
   const cityConfig = CITY_CONFIG[activeCity]
   const cityDayIds = cityConfig.dayIds
@@ -77,6 +78,7 @@ export default function App() {
 
   useEffect(() => {
     setActiveDayId(CITY_CONFIG[activeCity].dayIds[0])
+    setSwapSourceId(null)
   }, [activeCity])
 
   useEffect(() => {
@@ -87,6 +89,17 @@ export default function App() {
     if (!selectedDay) return
     const id = addActivity(selectedDay.id)
     setNewActId(id)
+  }
+
+  function handleChipClick(dayId: string) {
+    if (swapSourceId === null) {
+      setActiveDayId(dayId)
+    } else if (swapSourceId === dayId) {
+      setSwapSourceId(null)
+    } else {
+      swapDays(swapSourceId, dayId)
+      setSwapSourceId(null)
+    }
   }
 
   return (
@@ -145,13 +158,20 @@ export default function App() {
             <div style={s.dayStrip}>
               {cityDays.map((day, idx) => {
                 const active = day.id === activeDayId
+                const isSwapSource = day.id === swapSourceId
+                const isSwapTarget = swapSourceId !== null && !isSwapSource
                 const wx = getForDay(day.id, day.cities[0])
                 return (
                   <button
                     key={day.id}
                     ref={el => { chipRefs.current[day.id] = el }}
-                    onClick={() => setActiveDayId(day.id)}
-                    style={{ ...s.dayChip, ...(active ? s.dayChipActive : {}) }}
+                    onClick={() => handleChipClick(day.id)}
+                    style={{
+                      ...s.dayChip,
+                      ...(active && !swapSourceId ? s.dayChipActive : {}),
+                      ...(isSwapSource ? s.dayChipSwapSource : {}),
+                      ...(isSwapTarget ? s.dayChipSwapTarget : {}),
+                    }}
                   >
                     <div style={s.dayChipTop}>Day {idx + 1}</div>
                     <div style={s.dayChipDate}>{day.id.slice(5).replace('-', '/')} {getWeekday(day.id)}</div>
@@ -166,6 +186,14 @@ export default function App() {
               })}
             </div>
           </div>
+
+          {/* Swap mode banner */}
+          {swapSourceId && (
+            <div style={s.swapBanner}>
+              <span>選擇要對換的日期 · 再次點擊取消</span>
+              <button onClick={() => setSwapSourceId(null)} style={s.swapCancelBtn}>✕</button>
+            </div>
+          )}
 
           {/* Day detail header */}
           <div style={s.dayDetail}>
@@ -182,6 +210,10 @@ export default function App() {
             </div>
             <div style={s.dayDetailRight}>
               <button onClick={handleAddActivity} style={s.actionPillDark}>＋ 新增項目</button>
+              <button
+                onClick={() => setSwapSourceId(swapSourceId ? null : activeDayId)}
+                style={{ ...s.actionPill, ...(swapSourceId ? s.actionPillActive : {}) }}
+              >⇄ 換日</button>
             </div>
           </div>
 
@@ -353,6 +385,8 @@ const s: Record<string, React.CSSProperties> = {
     flexShrink: 0,
   },
   dayChipActive: { background: ink, color: cream },
+  dayChipSwapSource: { background: '#bf6a3d', color: cream, outline: `2px solid #bf6a3d` },
+  dayChipSwapTarget: { outline: `2px dashed #bf6a3d`, outlineOffset: -2 },
   dayChipTop: { fontSize: 14, fontWeight: 600, letterSpacing: '0.05em' },
   dayChipDate: { fontSize: 11, marginTop: 2, opacity: 0.85 },
   dayChipWx: {
@@ -385,6 +419,28 @@ const s: Record<string, React.CSSProperties> = {
     cursor: 'pointer', fontFamily: 'inherit',
     display: 'flex', alignItems: 'center', gap: 6,
     whiteSpace: 'nowrap' as const, justifyContent: 'center',
+  },
+  actionPill: {
+    background: 'transparent', color: muted,
+    border: `1px solid ${line}`,
+    padding: '7px 12px', fontSize: 12,
+    cursor: 'pointer', fontFamily: 'inherit',
+    whiteSpace: 'nowrap' as const, justifyContent: 'center',
+  },
+  actionPillActive: {
+    background: '#bf6a3d', color: cream, borderColor: '#bf6a3d',
+  },
+  swapBanner: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    background: '#fdf3e8', border: `1px solid #bf6a3d`,
+    padding: '8px 12px', marginBottom: 12,
+    fontSize: 12, color: '#bf6a3d',
+    fontFamily: "'JetBrains Mono', monospace",
+  },
+  swapCancelBtn: {
+    background: 'transparent', border: 'none',
+    color: '#bf6a3d', cursor: 'pointer',
+    fontSize: 14, padding: '0 4px', lineHeight: 1,
   },
 
   divider: { textAlign: 'center' as const, color: muted, opacity: 0.4, margin: '16px 0', fontSize: 10 },

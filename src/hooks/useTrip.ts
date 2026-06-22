@@ -157,10 +157,31 @@ export function useTrip() {
     sync(() => resetToSeed(SEED_DATA))
   }, [sync])
 
+  const swapDays = useCallback((dayId1: string, dayId2: string) => {
+    if (dayId1 === dayId2) return
+    const day1 = daysRef.current.find(d => d.id === dayId1)
+    const day2 = daysRef.current.find(d => d.id === dayId2)
+    if (!day1 || !day2) return
+
+    const items1 = [...day1.items]
+    const items2 = [...day2.items]
+
+    setDays(prev => prev.map(d => {
+      if (d.id === dayId1) return { ...d, items: items2 }
+      if (d.id === dayId2) return { ...d, items: items1 }
+      return d
+    }))
+
+    sync(async () => {
+      await reorderActivities(dayId1, items2)
+      await reorderActivities(dayId2, items1)
+    })
+  }, [sync])
+
   const replaceAll = useCallback((newDays: TripDay[]) => {
     setDays(newDays)
     sync(() => seedDays(newDays))
   }, [sync])
 
-  return { days, notes, syncStatus, updateActivity, deleteActivity, addActivity, moveActivity, updateNote, reset, replaceAll }
+  return { days, notes, syncStatus, updateActivity, deleteActivity, addActivity, moveActivity, updateNote, reset, replaceAll, swapDays }
 }

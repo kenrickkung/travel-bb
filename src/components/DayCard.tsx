@@ -15,7 +15,7 @@ const CITY_LABEL: Record<City, string> = {
   Amsterdam: '阿姆斯特丹',
 }
 
-const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
+const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日', ]
 
 function getWeekday(dayId: string): string {
   const [y, m, d] = dayId.split('-').map(Number)
